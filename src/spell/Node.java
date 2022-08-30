@@ -1,14 +1,15 @@
 package spell;
 
 public class Node implements INode{
+    private int count = 0;
     @Override
     public int getValue() {
-        return 0;
+        return count;
     }
 
     @Override
     public void incrementValue() {
-
+        count++;
     }
 
     @Override
