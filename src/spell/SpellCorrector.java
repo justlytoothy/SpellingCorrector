@@ -17,9 +17,6 @@ public class SpellCorrector implements ISpellCorrector {
             String str = scanner.next();
             trie.add(str);
         }
-        System.out.println(trie.getWordCount());
-        System.out.println(trie.getNodeCount());
-
         System.out.println(trie.toString());
     }
 

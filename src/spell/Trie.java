@@ -1,5 +1,5 @@
 package spell;
-
+import java.util.ArrayList;
 public class Trie implements ITrie{
 
     private Node root;
@@ -9,7 +9,7 @@ public class Trie implements ITrie{
     public Trie() {
         this.root = new Node();
         this.wordCount = 0;
-        this.nodeCount = 0;
+        this.nodeCount = 1;
     }
 
     @Override
@@ -19,27 +19,42 @@ public class Trie implements ITrie{
         int index = lowerWord.charAt(0) - 'a';
         INode currNode = this.root;
         for (int i = 0; i < lowerWord.length(); ++i) {
-            this.nodeCount++;
             index = lowerWord.charAt(i) - 'a';
             INode[] nodes = currNode.getChildren();
             if (nodes[index] == null) {
                 nodes[index] = new Node();
+                this.nodeCount++;
             }
             currNode = currNode.getChildren()[index];
             if (i == lowerWord.length() - 1) {
+                if (currNode.getValue() == 0) {
+                    this.wordCount++;
+                }
                 currNode.incrementValue();
             }
         }
-        this.wordCount++;
 
 
     }
 
     @Override
     public INode find(String word) {
-        return new Node();
-//        int index = (word.hashCode() % hashTable.length);
-//        return hashTable[index];
+        String checkWord = word.toLowerCase();
+        INode currNode = this.root;
+        for (int i = 0; i < checkWord.length(); ++i) {
+            if (currNode.getChildren()[checkWord.charAt(i) - 'a'] == null) {
+                return null;
+            }
+            else {
+                currNode = currNode.getChildren()[checkWord.charAt(i) - 'a'];
+            }
+        }
+        if (currNode.getValue() != 0) {
+            return currNode;
+        }
+        else {
+            return null;
+        }
     }
 
     @Override
@@ -106,6 +121,9 @@ public class Trie implements ITrie{
         //now check all the variables and return accordingly on check created
     }
     private boolean equalsHelper(INode n1, INode n2) {
+        if (n1 == null || n2 == null) {
+            return true;
+        }
         if (n1.getValue() != n2.getValue()) {
             return false;
         }
