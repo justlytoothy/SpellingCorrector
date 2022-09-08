@@ -32,32 +32,42 @@ public class SpellCorrector implements ISpellCorrector {
         else {
             Set<String> distOneWords = this.distanceOne(checkWord);
             for (String s : distOneWords) {
-                if (this.trie.find(s) != null) {
-                    if (words.containsKey(s)) {
-                        int curr = words.get(s);
-                        words.replace(s,curr + 1);
-                    }
-                    else {
-                        words.put(s ,1);
+                INode node = this.trie.find(s);
+                if (node != null) {
+                    words.put(s , node.getValue());
+                }
+            }
+            if (words.isEmpty()) {
+                Set<String> distTwoWords = this.distanceTwo(distOneWords);
+                for (String s : distTwoWords) {
+                    INode node = this.trie.find(s);
+                    if (node != null) {
+                        words.put(s , node.getValue());
                     }
                 }
             }
-            AtomicReference<String> suggestion = new AtomicReference<>();
-            AtomicInteger start = new AtomicInteger(0);
-            words.forEach((key, value) -> {
-                if (start.get() < value) {
-                    start.set(value);
-                    suggestion.set(key);
-                }
-                else if (start.get() == value) {
-                    //working here
-                }
-            });
-            System.out.println(suggestion.toString());
-            System.out.println(start.toString());
+            if (words.isEmpty()) {
+                return null;
+            }
+            else {
+                AtomicReference<String> suggestion = new AtomicReference<>();
+                AtomicInteger start = new AtomicInteger(0);
+                words.forEach((key, value) -> {
+                    if (start.get() < value) {
+                        start.set(value);
+                        suggestion.set(key);
+
+                    } else if (start.get() == value) {
+                        if (suggestion.toString().compareToIgnoreCase(key) > 0) {
+                            start.set(value);
+                            suggestion.set(key);
+                        }
+                    }
+                });
+                return suggestion.toString();
+            }
         }
 
-        return null;
     }
     public Set<String> distanceOne(String input) {
         Set<String> distOneWords = new HashSet<>();
@@ -76,12 +86,40 @@ public class SpellCorrector implements ISpellCorrector {
         }
         //remove one char
         for (int i = 0; i < input.length(); ++i) {
-            char replaceChar = input.charAt(i);
             stringBuilder.replace(i,i+1,"");
             distOneWords.add(stringBuilder.toString());
             stringBuilder = new StringBuilder(input);
         }
+        //add char
+        for (int i = 0; i <= input.length(); ++i) {
+            for (int j = 0; j < 26; j++) {
+                char newChar = (char)('a' + j);
+                stringBuilder.insert(i,newChar);
+                distOneWords.add(stringBuilder.toString());
+                stringBuilder = new StringBuilder(input);
+            }
+        }
+        //transpose char
+        for (int i = 0; i < input.length(); ++i) {
+            if (i < input.length() - 1) {
+                char charOne = input.charAt(i);
+                char charTwo = input.charAt(i+1);
+                stringBuilder.setCharAt(i,charTwo);
+                stringBuilder.setCharAt(i+1,charOne);
+                distOneWords.add(stringBuilder.toString());
+                stringBuilder = new StringBuilder(input);
+            }
+        }
         return distOneWords;
+    }
+
+    public Set<String> distanceTwo(Set<String> distOneWords) {
+        Set<String> distTwoWords = new HashSet<>();
+        for (String s : distOneWords) {
+            Set<String> temp = this.distanceOne(s);
+            distTwoWords.addAll(temp);
+        }
+        return distTwoWords;
     }
 
 }
